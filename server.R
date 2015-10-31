@@ -7,11 +7,11 @@ library(ggplot2)
 library(RCurl)
 
 
-n_iters <- 10
-n_sec_iters <- 10
+n_iters <- 50
+n_sec_iters <- 50
 high_perc <- 0.25
 low_perc <- 0.75
-n_samples <- 50
+n_samples <- 500
 
 
 
