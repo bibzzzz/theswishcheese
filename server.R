@@ -119,6 +119,9 @@ n_samples <- 50
 # write.csv(gp_table,'/Users/amydonaldson/Documents/Habib/dev/gp_table.csv',row.names=FALSE)
 # write.csv(player_proj,'/Users/amydonaldson/Documents/Habib/dev/player_proj.csv',row.names=FALSE)
 
+gp_table <- read.csv('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv',header=TRUE)
+player_proj <- read.csv('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv',header=TRUE)
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   player_proj_input <- reactive({
