@@ -1,9 +1,10 @@
 library(shiny)
-library(XML)
+#library(XML)
 library(plyr)
 library(stringr)
 # library(data.table)
 library(ggplot2)
+
 
 n_iters <- 10
 n_sec_iters <- 10
@@ -119,8 +120,8 @@ n_samples <- 50
 # write.csv(gp_table,'/Users/amydonaldson/Documents/Habib/dev/gp_table.csv',row.names=FALSE)
 # write.csv(player_proj,'/Users/amydonaldson/Documents/Habib/dev/player_proj.csv',row.names=FALSE)
 
-gp_table <- read.csv('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv',header=TRUE)
-player_proj <- read.csv('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv',header=TRUE)
+gp_table <- read.csv('http://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv',header=TRUE)
+player_proj <- read.csv('http://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv',header=TRUE)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
