@@ -7,11 +7,11 @@ library(ggplot2)
 library(RCurl)
 
 
-n_iters <- 50
-n_sec_iters <- 50
+n_iters <- 5
+n_sec_iters <- 5
 high_perc <- 0.25
 low_perc <- 0.75
-n_samples <- 500
+n_samples <- 10
 
 
 
@@ -279,16 +279,27 @@ shinyServer(function(input, output, session) {
     plot_data <- plot_data[with(plot_data, order(rank)), ]
     plot_data$group <- factor(plot_data$group, levels = unique(plot_data$group[sort(plot_data$rank)]))
     plot_data$player <- factor(plot_data$player, levels = plot_data$player[rank(-plot_data$final_value,ties.method = "first")])
-    ggplot(plot_data,aes(x=player,y=final_value)) +
+    plot_data$highlight <- factor(ifelse(plot_data$player%in%input$sel_players,1,0))
+    ggplot(plot_data,aes(x=player,y=final_value,fill=highlight)) +
       geom_bar(stat="identity") +
+      scale_fill_manual(values=c("#78c9a1","#ffc800")) +
       xlab("Player") +
       ylab("Value") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-      facet_wrap(~group, ncol=5, scales="free_x")
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+            , legend.position="none"
+            , axis.ticks=element_blank()) +
+      facet_wrap(~group, ncol=4, scales="free_x")
   }, height = 800, width = 800 )
   output$iterplot <- renderPlot({ 
     ggplot(interim_valuation_table()[interim_valuation_table()$player%in%c("JamesHarden","KyleLowry", "TimDuncan","StephenCurry", "LeBronJames", "ChrisPaul", "AndreDrummond","MikeConley","KevinDurant","AnthonyDavis"),]
            ,aes(x=iteration,y=value,colour=player)) +
       geom_path()
   })
+  output$sel_player_table <- renderTable({ 
+    final_val_table <- final_valuation_table()[final_valuation_table()$player%in%input$sel_players,]
+    player_proj_table <- merge(player_proj,final_val_table,by="player")
+    sel_player_table <- player_proj_table[,c("player","GP","FGM","FGA","FTM","FTA","TPM","REB","AST","STL","BLK","PTS","final_value")]
+    names(sel_player_table) <- c("Player","GP","FGM","FGA","FTM","FTA","TPM","REB","AST","STL","BLK","PTS","Value")
+    return (sel_player_table)
+  },include.rownames=FALSE)
 })
