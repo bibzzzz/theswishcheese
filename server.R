@@ -151,7 +151,7 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
-        if (team_perf_i[11]<=budget){
+        if (team_perf_i[11]<=input$budget){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
           print(paste0(iter,"/",n_iters," - ",i,"/",n_samples))
@@ -211,7 +211,7 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
-        if (team_perf_i[11]<=budget){
+        if (team_perf_i[11]<=input$budget){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
           print(paste0(iter,"/",n_sec_iters," - ",i,"/",n_samples))
@@ -251,7 +251,7 @@ shinyServer(function(input, output, session) {
                                           ,new_valuation_table$value+(new_valuation_table$adjustment-mean(new_valuation_table$adjustment))/sd(new_valuation_table$adjustment)))
       player_proj <- merge(player_proj,new_valuation_table[,c("player","new_value")])
       player_proj$value <- player_proj$new_value
-      player_proj$value <- (budget*n_teams)*(player_proj$value/sum(player_proj$value))
+      player_proj$value <- (input$budget*input$n_teams)*(player_proj$value/sum(player_proj$value))
       valuation_table <- rbind(valuation_table,data.frame(player=player_proj$player,value=player_proj$new_value,iteration=iter))
       player_proj <- player_proj[,names(player_proj)!="new_value"]
       #print(paste0(iter,"/",n_sec_iters))
