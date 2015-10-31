@@ -3,6 +3,8 @@ library(shiny)
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
+  # Google analytics tracking
+  tags$head(includeScript("google-analytics.js")),
   # Application title
   titlePanel("theswishcheese NBA fantasy player evaluation"),
   
