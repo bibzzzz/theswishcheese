@@ -7,11 +7,11 @@ library(ggplot2)
 library(RCurl)
 
 
-n_iters <- 5
-n_sec_iters <- 5
+n_iters <- 50
+n_sec_iters <- 50
 high_perc <- 0.25
 low_perc <- 0.75
-n_samples <- 10
+n_samples <- 500
 
 
 
@@ -295,11 +295,13 @@ shinyServer(function(input, output, session) {
            ,aes(x=iteration,y=value,colour=player)) +
       geom_path()
   })
-  output$sel_player_table <- renderTable({ 
+  output$team_value <- renderText({ 
     final_val_table <- final_valuation_table()[final_valuation_table()$player%in%input$sel_players,]
-    player_proj_table <- merge(player_proj,final_val_table,by="player")
-    sel_player_table <- player_proj_table[,c("player","GP","FGM","FGA","FTM","FTA","TPM","REB","AST","STL","BLK","PTS","final_value")]
-    names(sel_player_table) <- c("Player","GP","FGM","FGA","FTM","FTA","TPM","REB","AST","STL","BLK","PTS","Value")
-    return (sel_player_table)
-  },include.rownames=FALSE)
+    team_value <- sum(final_val_table$final_value)
+    return (paste0("The current selection of players is valued at ",round(team_value,0)," under the current league settings"))
+  })
+  output$sel_playerlist <- renderUI({
+    selectizeInput("sel_players","Highlight players:", choices = levels(final_valuation_table()$player), selected = NULL, multiple = TRUE,
+                   options = NULL)
+  })
 })
