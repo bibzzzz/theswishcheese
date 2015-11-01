@@ -124,7 +124,7 @@ player_proj <- read.csv(text = player_proj_url)
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   player_proj_input <- reactive({
-    return (data.frame(player_proj,value=(input$budget*input$n_teams*input$squad_size)/(input$budget*input$n_teams*input$squad_size)))
+    return (data.frame(player_proj,value=(input$budget)/(input$squad_size)))
   })
   interim_valuation_table <- reactive({
     
@@ -205,7 +205,7 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
-        if (team_perf_i[11]<=input$budget){
+        if ((team_perf_i[11]<=input$budget)){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
           print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
@@ -287,7 +287,8 @@ shinyServer(function(input, output, session) {
   output$iterplot <- renderPlot({ 
     ggplot(interim_valuation_table()[interim_valuation_table()$player%in%input$sel_players,]
            ,aes(x=iteration,y=value,colour=player)) +
-      geom_path()
+      geom_path() +
+      xlim(1,input$n_iters)
   },  height = 400, width = 800 )
   output$team_value <- renderText({ 
     final_val_table <- final_valuation_table()[final_valuation_table()$player%in%input$sel_players,]
