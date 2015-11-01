@@ -6,14 +6,8 @@ library(stringr)
 library(ggplot2)
 library(RCurl)
 
-
-n_iters <- 50
-n_sec_iters <- 50
 high_perc <- 0.25
 low_perc <- 0.75
-n_samples <- 500
-
-
 
 # player_universe_size <- 600
 # player_proj_tables_prefix <- "http://games.espn.go.com/fba/freeagency?leagueId=103954&startIndex="
@@ -134,7 +128,7 @@ shinyServer(function(input, output, session) {
   })
   interim_valuation_table <- reactive({
     
-    progress <- shiny::Progress$new(session, min=1, max=n_iters + n_sec_iters)
+    progress <- shiny::Progress$new(session, min=1, max=input$n_iters + input$n_iters)
     on.exit(progress$close())
     
     progress$set(message = 'Simulation in progress',
@@ -143,18 +137,18 @@ shinyServer(function(input, output, session) {
     player_proj <- player_proj_input()
     
     valuation_table <- NULL
-    for (iter in 1:n_iters){  
+    for (iter in 1:input$n_iters){  
       playerlist <- NULL
       agg_team_proj <- NULL
       i <- 1
-      while (i <= n_samples){
+      while (i <= input$n_samples){
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
         if (team_perf_i[11]<=input$budget){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
-          print(paste0(iter,"/",n_iters," - ",i,"/",n_samples))
+          print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
           i <- i + 1}
       }
       
@@ -165,16 +159,16 @@ shinyServer(function(input, output, session) {
       
       agg_team_proj <- agg_team_proj[,c("TPM","REB","AST","STL","BLK","PTS","FGPCT","FTPCT")]
       
-      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),n_samples,8,byrow=TRUE)
-      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),n_samples,8,byrow=TRUE)
+      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),input$n_samples,8,byrow=TRUE)
+      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),input$n_samples,8,byrow=TRUE)
       std_matrix <- (agg_team_proj-mean_matrix)/sd_matrix
-      scored_projections <- data.frame(id=seq(1,n_samples,1),std_matrix,score=rowSums(std_matrix))
+      scored_projections <- data.frame(id=seq(1,input$n_samples,1),std_matrix,score=rowSums(std_matrix))
       scored_projections$rank <- rank(-scored_projections$score)
-      top_squads <- scored_projections$id[scored_projections$rank<=n_samples*high_perc]
+      top_squads <- scored_projections$id[scored_projections$rank<=input$n_samples*high_perc]
       inc_players <- data.frame(player=unlist(playerlist[top_squads]))
       increase_table <- count(inc_players)
       names(increase_table)[2] <- "increase_points"
-      bottom_squads <- scored_projections$id[scored_projections$rank>=n_samples*low_perc]
+      bottom_squads <- scored_projections$id[scored_projections$rank>=input$n_samples*low_perc]
       dec_players <- data.frame(player=unlist(playerlist[bottom_squads]))
       decrease_table <- count(dec_players)
       names(decrease_table)[2] <- "decrease_points"
@@ -193,7 +187,7 @@ shinyServer(function(input, output, session) {
       player_proj$value <- player_proj$new_value
       valuation_table <- rbind(valuation_table,data.frame(player=player_proj$player,value=player_proj$new_value,iteration=iter))
       player_proj <- player_proj[,names(player_proj)!="new_value"]
-      #print(paste0(iter,"/",n_iters))
+      #print(paste0(iter,"/",input$n_iters))
       progress$set(value = iter)
     }
     
@@ -203,18 +197,18 @@ shinyServer(function(input, output, session) {
     player_proj$value <- rep(1,length(player_proj$value))
     
     valuation_table <- NULL
-    for (iter in 1:n_sec_iters){  
+    for (iter in 1:input$n_iters){  
       playerlist <- NULL
       agg_team_proj <- NULL
       i <- 1
-      while (i <= n_samples){
+      while (i <= input$n_samples){
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
         if (team_perf_i[11]<=input$budget){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
-          print(paste0(iter,"/",n_sec_iters," - ",i,"/",n_samples))
+          print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
           i <- i + 1}
       }
       
@@ -225,16 +219,16 @@ shinyServer(function(input, output, session) {
       
       agg_team_proj <- agg_team_proj[,c("TPM","REB","AST","STL","BLK","PTS","FGPCT","FTPCT")]
       
-      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),n_samples,8,byrow=TRUE)
-      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),n_samples,8,byrow=TRUE)
+      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),input$n_samples,8,byrow=TRUE)
+      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),input$n_samples,8,byrow=TRUE)
       std_matrix <- (agg_team_proj-mean_matrix)/sd_matrix
-      scored_projections <- data.frame(id=seq(1,n_samples,1),std_matrix,score=rowSums(std_matrix))
+      scored_projections <- data.frame(id=seq(1,input$n_samples,1),std_matrix,score=rowSums(std_matrix))
       scored_projections$rank <- rank(-scored_projections$score)
-      top_squads <- scored_projections$id[scored_projections$rank<=n_samples*high_perc]
+      top_squads <- scored_projections$id[scored_projections$rank<=input$n_samples*high_perc]
       inc_players <- data.frame(player=unlist(playerlist[top_squads]))
       increase_table <- count(inc_players)
       names(increase_table)[2] <- "increase_points"
-      bottom_squads <- scored_projections$id[scored_projections$rank>=n_samples*low_perc]
+      bottom_squads <- scored_projections$id[scored_projections$rank>=input$n_samples*low_perc]
       dec_players <- data.frame(player=unlist(playerlist[bottom_squads]))
       decrease_table <- count(dec_players)
       names(decrease_table)[2] <- "decrease_points"
@@ -254,14 +248,14 @@ shinyServer(function(input, output, session) {
       player_proj$value <- (input$budget*input$n_teams)*(player_proj$value/sum(player_proj$value))
       valuation_table <- rbind(valuation_table,data.frame(player=player_proj$player,value=player_proj$new_value,iteration=iter))
       player_proj <- player_proj[,names(player_proj)!="new_value"]
-      #print(paste0(iter,"/",n_sec_iters))
-      progress$set(value = iter + n_iters)
+      #print(paste0(iter,"/",input$n_iters))
+      progress$set(value = iter + input$n_iters)
     }
     return (valuation_table)
   })
   
   final_valuation_table <- reactive({
-    valuation_table <- interim_valuation_table()[interim_valuation_table()$iter==n_sec_iters,]
+    valuation_table <- interim_valuation_table()[interim_valuation_table()$iter==input$n_iters,]
     full_valuation_table <- merge(valuation_table,gp_table,all.x=TRUE)
     full_valuation_table$GP <- ifelse(is.na(full_valuation_table$GP),mean(gp_table$GP),full_valuation_table$GP)
     full_valuation_table$final_value <- (full_valuation_table$GP/sum(full_valuation_table$GP))*full_valuation_table$value
@@ -269,7 +263,7 @@ shinyServer(function(input, output, session) {
     return (full_valuation_table)
   })
   output$player_proj_table <- renderTable({
-    table <- interim_valuation_table()[interim_valuation_table()$iteration==n_sec_iters,]
+    table <- interim_valuation_table()[interim_valuation_table()$iteration==input$n_iters,]
     return (table[,c("player","value")])
   }, include.rownames=FALSE)
   output$valueplot <- renderPlot({ 
@@ -291,10 +285,10 @@ shinyServer(function(input, output, session) {
       facet_wrap(~group, ncol=4, scales="free_x")
   }, height = 800, width = 800 )
   output$iterplot <- renderPlot({ 
-    ggplot(interim_valuation_table()[interim_valuation_table()$player%in%c("JamesHarden","KyleLowry", "TimDuncan","StephenCurry", "LeBronJames", "ChrisPaul", "AndreDrummond","MikeConley","KevinDurant","AnthonyDavis"),]
+    ggplot(interim_valuation_table()[interim_valuation_table()$player%in%input$sel_players,]
            ,aes(x=iteration,y=value,colour=player)) +
       geom_path()
-  })
+  },  height = 400, width = 800 )
   output$team_value <- renderText({ 
     final_val_table <- final_valuation_table()[final_valuation_table()$player%in%input$sel_players,]
     team_value <- sum(final_val_table$final_value)
