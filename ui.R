@@ -20,7 +20,7 @@ shinyUI(fluidPage(
       textOutput("team_value"),
       br(),
       h3("Optimization settings"),
-      sliderInput("n_iters","No. of iterations:", min=10, max=100, value = 50, step = 10),
+      sliderInput("n_iters","No. of iterations:", min=10, max=200, value = 50, step = 10),
       sliderInput("n_samples","No. of samples per iteration:", min=50, max=1000, value = 200, step = 50)
     ),
 

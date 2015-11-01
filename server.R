@@ -159,16 +159,15 @@ shinyServer(function(input, output, session) {
       
       agg_team_proj <- agg_team_proj[,c("TPM","REB","AST","STL","BLK","PTS","FGPCT","FTPCT")]
       
-      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),input$n_samples,8,byrow=TRUE)
-      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),input$n_samples,8,byrow=TRUE)
-      std_matrix <- (agg_team_proj-mean_matrix)/sd_matrix
-      scored_projections <- data.frame(id=seq(1,input$n_samples,1),std_matrix,score=rowSums(std_matrix))
-      scored_projections$rank <- rank(-scored_projections$score)
-      top_squads <- scored_projections$id[scored_projections$rank<=input$n_samples*high_perc]
+      scored_projections <- rowSums(sapply(agg_team_proj, function(x) rank(x)))
+      
+      scored_projections_table <- data.frame(id=1:input$n_samples,z_score=(scored_projections-mean(scored_projections))/sd(scored_projections))
+      scored_projections_table$rank <- rank(-scored_projections_table$z_score)
+      top_squads <- scored_projections_table$id[scored_projections_table$rank<=input$n_samples*high_perc]
       inc_players <- data.frame(player=unlist(playerlist[top_squads]))
       increase_table <- count(inc_players)
       names(increase_table)[2] <- "increase_points"
-      bottom_squads <- scored_projections$id[scored_projections$rank>=input$n_samples*low_perc]
+      bottom_squads <- scored_projections_table$id[scored_projections_table$rank>=input$n_samples*low_perc]
       dec_players <- data.frame(player=unlist(playerlist[bottom_squads]))
       decrease_table <- count(dec_players)
       names(decrease_table)[2] <- "decrease_points"
@@ -194,7 +193,7 @@ shinyServer(function(input, output, session) {
     
     ##### ONCE TOP 120 PLAYERS ISOLATED RERUN VALUATIONS #####
     player_proj <- player_proj[rank(-player_proj$value, ties.method = "random")<=input$n_teams*input$squad_size,]
-    player_proj$value <- rep(1,length(player_proj$value))
+    player_proj$value <- rep(input$budget/input$squad_size,length(player_proj$value))
     
     valuation_table <- NULL
     for (iter in 1:input$n_iters){  
@@ -219,16 +218,15 @@ shinyServer(function(input, output, session) {
       
       agg_team_proj <- agg_team_proj[,c("TPM","REB","AST","STL","BLK","PTS","FGPCT","FTPCT")]
       
-      mean_matrix <- matrix(apply(agg_team_proj, 2, mean),input$n_samples,8,byrow=TRUE)
-      sd_matrix <- matrix(apply(agg_team_proj, 2, sd),input$n_samples,8,byrow=TRUE)
-      std_matrix <- (agg_team_proj-mean_matrix)/sd_matrix
-      scored_projections <- data.frame(id=seq(1,input$n_samples,1),std_matrix,score=rowSums(std_matrix))
-      scored_projections$rank <- rank(-scored_projections$score)
-      top_squads <- scored_projections$id[scored_projections$rank<=input$n_samples*high_perc]
+      scored_projections <- rowSums(sapply(agg_team_proj, function(x) rank(x)))
+      
+      scored_projections_table <- data.frame(id=1:input$n_samples,z_score=(scored_projections-mean(scored_projections))/sd(scored_projections))
+      scored_projections_table$rank <- rank(-scored_projections_table$z_score)
+      top_squads <- scored_projections_table$id[scored_projections_table$rank<=input$n_samples*high_perc]
       inc_players <- data.frame(player=unlist(playerlist[top_squads]))
       increase_table <- count(inc_players)
       names(increase_table)[2] <- "increase_points"
-      bottom_squads <- scored_projections$id[scored_projections$rank>=input$n_samples*low_perc]
+      bottom_squads <- scored_projections_table$id[scored_projections_table$rank>=input$n_samples*low_perc]
       dec_players <- data.frame(player=unlist(playerlist[bottom_squads]))
       decrease_table <- count(dec_players)
       names(decrease_table)[2] <- "decrease_points"
