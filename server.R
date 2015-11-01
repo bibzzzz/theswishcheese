@@ -145,7 +145,7 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
-        if (team_perf_i[11]<=input$budget){
+        if ((team_perf_i[11]<=input$budget)&(team_perf_i[11]>=0.9*input$budget)){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
           print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
@@ -204,7 +204,7 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:12])
-        if ((team_perf_i[11]<=input$budget)){
+        if ((team_perf_i[11]<=input$budget)&(team_perf_i[11]>=0.9*input$budget)){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
           print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
@@ -283,10 +283,16 @@ shinyServer(function(input, output, session) {
       facet_wrap(~group, ncol=4, scales="free_x")
   }, height = 800, width = 800 )
   output$iterplot <- renderPlot({ 
-    ggplot(interim_valuation_table()[interim_valuation_table()$player%in%input$sel_players,]
+    iter_plot_data <- rbind(interim_valuation_table()[,c("player","iteration","value")],data.frame(player=final_valuation_table()$player
+                                                                                                   ,iteration=rep(max(interim_valuation_table()$iteration) + 1,length(final_valuation_table()$player))
+                                                                                                   ,value=final_valuation_table()$final_value))
+    ggplot(iter_plot_data[iter_plot_data$player%in%input$sel_players,]
            ,aes(x=iteration,y=value,colour=player)) +
       geom_path() +
-      xlim(1,input$n_iters)
+      xlim(1,input$n_iters + 1) +
+      xlab("Iteration") +
+      ylab("Player value") +
+      scale_colour_discrete(name = "Player")
   },  height = 400, width = 800 )
   output$team_value <- renderText({ 
     final_val_table <- final_valuation_table()[final_valuation_table()$player%in%input$sel_players,]
