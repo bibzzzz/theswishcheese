@@ -18,6 +18,46 @@ player_proj$TO <- -player_proj$TO
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
+  observe({
+    if(input$all_cats == 0) return(NULL) 
+    else if (input$all_cats%%2 == 0)
+    {
+      updateCheckboxGroupInput(session, "cats", "Categories:", 
+                               choices=c("Field goal percentage" = "FGPCT",
+                                         "Free throw percentage" = "FTPCT",
+                                         "Three pointers made" = "TPM",
+                                         "Assists" = "AST",
+                                         "Steals" = "STL",
+                                         "Rebounds" = "REB",
+                                         "Blocks" = "BLK",
+                                         "Points" = "PTS",
+                                         "Turnovers" = "TO"),
+                               inline = TRUE)
+    }
+    else
+    {
+      updateCheckboxGroupInput(session, "cats", "Categories:", choices=c("Field goal percentage" = "FGPCT",
+                                                                         "Free throw percentage" = "FTPCT",
+                                                                         "Three pointers made" = "TPM",
+                                                                         "Assists" = "AST",
+                                                                         "Steals" = "STL",
+                                                                         "Rebounds" = "REB",
+                                                                         "Blocks" = "BLK",
+                                                                         "Points" = "PTS",
+                                                                         "Turnovers" = "TO"), 
+                               selected=c("Field goal percentage" = "FGPCT",
+                                          "Free throw percentage" = "FTPCT",
+                                          "Three pointers made" = "TPM",
+                                          "Assists" = "AST",
+                                          "Steals" = "STL",
+                                          "Rebounds" = "REB",
+                                          "Blocks" = "BLK",
+                                          "Points" = "PTS",
+                                          "Turnovers" = "TO"),
+                               inline = TRUE)
+    }
+  })
+  
   player_proj_input <- eventReactive(input$go, {
     print(player_proj)
     return (data.frame(player_proj,value=(input$budget)/(input$squad_size)))
@@ -216,7 +256,7 @@ shinyServer(function(input, output, session) {
       download_table <- merge(final_valuation_table()[,c('player','final_value', 'GP')],
                               player_proj[,c("player", proj_cols)], by="player")
       # download_table <- merge(download_table, gp_table, by="player")
-      download_table <- download_table[-order(download_table$final_value), ]
+      download_table <- download_table[order(-download_table$final_value), ]
       write.csv(download_table, file, row.names = FALSE)
     }
   )
