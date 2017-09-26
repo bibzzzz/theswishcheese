@@ -4,7 +4,7 @@ library(shiny)
 shinyUI(fluidPage(
   
   # Google analytics tracking
-  tags$head(includeScript("google-analytics.js")),
+  # tags$head(includeScript("google-analytics.js")),
   
   # Application title
   titlePanel(HTML('<a target="_blank" href="http://cargocollective.com/theswishcheese">the swish cheese</a> - NBA fantasy draft tool'), 
@@ -15,10 +15,16 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       h3("League settings"),
-      # checkboxGroupInput("cats", "Categories:",
-      #                    c("TO" = "TO",
-      #                      "PTS" = "Points",
-      #                      "FG%" = "FGPCT")),
+      checkboxGroupInput("cats", "Categories:",
+                         c("Assists" = "AST",
+                           "Rebounds" = "REB",
+                           "Steals" = "STL",
+                           "Blocks" = "BLK",
+                           "Three pointers made" = "TPM",
+                           "Points" = "PTS",
+                           "Turnovers" = "TO",
+                           "Field goal percentage" = "FGPCT",
+                           "Free throw percentage" = "FTPCT")),
       sliderInput("budget","Select budget:", min=100, max=500, value = 200, step=50),
       sliderInput("n_teams","No. of teams in league:", min=2, max=20, value = 14),
       sliderInput("squad_size","No. of core players:", min=2, max=13, value = 10),
@@ -42,7 +48,6 @@ shinyUI(fluidPage(
       h4("Final player values"),
       plotOutput("valueplot")
       # div(tableOutput("sel_player_table")),
-      
     )
   )
 ))
