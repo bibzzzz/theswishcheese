@@ -9,113 +9,6 @@ library(RCurl)
 high_perc <- 0.25
 low_perc <- 0.75
 
-# player_universe_size <- 600
-# player_proj_tables_prefix <- "http://games.espn.go.com/fba/freeagency?leagueId=103954&startIndex="
-# player_proj_tables_suffix <- "&context=freeagency&version=projections&avail=-1"
-# sec_player_proj_tables_prefix <- "http://www1.fantasypros.com/nba/projections/avg-overall.php"
-# data <- read.csv("/Users/amydonaldson/Documents/Habib/swish cheese/2016_valuations_complete.csv",header = TRUE)
-# data <- data.table(data)
-
-# player_proj <- NULL
-# i <- 0
-# while (i<=player_universe_size){
-#   
-#   table_url_i <- paste0(player_proj_tables_prefix,i,player_proj_tables_suffix)
-#   table_i <- readHTMLTable(table_url_i)
-#   player_table_i <- table_i$playertable_0
-#   names(player_table_i) <- as.character(data.frame(lapply(player_table_i[1,], as.character)
-#                                                    , stringsAsFactors=FALSE))
-#   player_table_i <- player_table_i[2:nrow(player_table_i),c(1,6:18)]
-#   i <- i + nrow(player_table_i)
-#   
-#   player_proj <- rbind(player_proj,player_table_i)
-# }
-# 
-# player_proj <- unique(player_proj)
-# player_proj$value <- 1
-# player_proj <- player_proj[player_proj$PTS!='--',]
-# 
-# player_proj <- player_proj[,c(1,5:ncol(player_proj))]
-# names(player_proj)[1] <- "player"
-# names(player_proj)[2] <- "FGMA"
-# names(player_proj)[4] <- "FTMA"
-# names(player_proj)[6] <- "TPM"
-# 
-# player_proj$player <- sapply(strsplit(as.character(player_proj$player), ","), `[[`, 1)
-# player_proj$player <- gsub("*","", player_proj$player , fixed=TRUE)
-# player_proj$player <- gsub(" ","", player_proj$player , fixed=TRUE)
-# player_proj$player <- gsub(".","", player_proj$player , fixed=TRUE)
-# player_proj$player <- gsub("-","", player_proj$player , fixed=TRUE)
-# player_proj$player <- gsub("'","", player_proj$player , fixed=TRUE)
-# 
-# 
-# player_proj$FGM <- as.numeric(sapply(strsplit(as.character(player_proj$FGMA), "/"), `[[`, 1))
-# player_proj$FGA <- as.numeric(sapply(strsplit(as.character(player_proj$FGMA), "/"), `[[`, 2))
-# player_proj$FTM <- as.numeric(sapply(strsplit(as.character(player_proj$FTMA), "/"), `[[`, 1))
-# player_proj$FTA <- as.numeric(sapply(strsplit(as.character(player_proj$FTMA), "/"), `[[`, 2))
-# player_proj$REB <- as.numeric(as.character(player_proj$REB))
-# player_proj$AST <- as.numeric(as.character(player_proj$AST))
-# player_proj$STL <- as.numeric(as.character(player_proj$STL))
-# player_proj$BLK <- as.numeric(as.character(player_proj$BLK))
-# player_proj$PTS <- as.numeric(as.character(player_proj$PTS))
-# player_proj[,"TPM"] <- as.numeric(as.character(player_proj[,"TPM"]))
-# player_proj$GP <- 82
-# 
-# ### INCORPORATE SECONDARY DATA SOURCE ###
-# 
-# table_url_i <- paste0(sec_player_proj_tables_prefix)
-# table_i <- readHTMLTable(table_url_i)
-# sec_player_proj <- table_i$data
-# 
-# sec_player_proj <- unique(sec_player_proj)
-# #sec_player_proj$value <- 1
-# #sec_player_proj <- sec_player_proj[sec_player_proj$PTS!='--',]
-# 
-# names(sec_player_proj)[1] <- "player"
-# names(sec_player_proj)[9] <- "TPM"
-# 
-# sec_player_proj$player <- gsub("(",")", sec_player_proj$player , fixed=TRUE)
-# sec_player_proj$player <- sapply(strsplit(as.character(sec_player_proj$player), ')'), `[[`, 1)
-# sec_player_proj$player <- gsub("*","", sec_player_proj$player , fixed=TRUE)
-# sec_player_proj$player <- gsub(" ","", sec_player_proj$player , fixed=TRUE)
-# sec_player_proj$player <- gsub(".","", sec_player_proj$player , fixed=TRUE)
-# sec_player_proj$player <- gsub("-","", sec_player_proj$player , fixed=TRUE)
-# sec_player_proj$player <- gsub("'","", sec_player_proj$player , fixed=TRUE)
-# 
-# sec_player_proj <- sec_player_proj[,c("player","PTS","REB","AST","BLK","STL","TPM","GP")]
-# 
-# 
-# sec_player_proj$REB <- as.numeric(as.character(sec_player_proj$REB))
-# sec_player_proj$AST <- as.numeric(as.character(sec_player_proj$AST))
-# sec_player_proj$STL <- as.numeric(as.character(sec_player_proj$STL))
-# sec_player_proj$BLK <- as.numeric(as.character(sec_player_proj$BLK))
-# sec_player_proj$PTS <- as.numeric(as.character(sec_player_proj$PTS))
-# sec_player_proj[,"TPM"] <- as.numeric(as.character(sec_player_proj[,"TPM"]))
-# sec_player_proj$GP <- as.numeric(as.character(sec_player_proj$GP))
-# sec_player_proj$GP <- ifelse(sec_player_proj$GP>82,82,sec_player_proj$GP)
-# 
-# temp_player_proj <- merge(player_proj,sec_player_proj,by="player",all.x=TRUE)
-# 
-# # gp_table <- data.frame(player=temp_player_proj$player,GP=(temp_player_proj$GP.x+temp_player_proj$GP.y)/2)
-# gp_table <- data.frame(player=temp_player_proj$player[!is.na(temp_player_proj$GP.y)],GP=temp_player_proj$GP.y[!is.na(temp_player_proj$GP.y)])
-# player_proj <- player_proj[,names(player_proj)!="GP"]
-# 
-# player_proj <- data.frame(player=temp_player_proj$player,
-#                           FGM=temp_player_proj$FGM,
-#                           FGA=temp_player_proj$FGA,
-#                           FTM=temp_player_proj$FTM,
-#                           FTA=temp_player_proj$FTA,
-#                           "TPM"=ifelse(is.na(temp_player_proj[,"TPM.y"]),temp_player_proj[,"TPM.x"],(temp_player_proj[,"TPM.x"]+temp_player_proj[,"TPM.y"])/2),
-#                           REB=ifelse(is.na(temp_player_proj[,"REB.y"]),temp_player_proj[,"REB.x"],(temp_player_proj[,"REB.x"]+temp_player_proj[,"REB.y"])/2),
-#                           AST=ifelse(is.na(temp_player_proj[,"AST.y"]),temp_player_proj[,"AST.x"],(temp_player_proj[,"AST.x"]+temp_player_proj[,"AST.y"])/2),
-#                           STL=ifelse(is.na(temp_player_proj[,"STL.y"]),temp_player_proj[,"STL.x"],(temp_player_proj[,"STL.x"]+temp_player_proj[,"STL.y"])/2),
-#                           BLK=ifelse(is.na(temp_player_proj[,"BLK.y"]),temp_player_proj[,"BLK.x"],(temp_player_proj[,"BLK.x"]+temp_player_proj[,"BLK.y"])/2),
-#                           PTS=ifelse(is.na(temp_player_proj[,"PTS.y"]),temp_player_proj[,"PTS.x"],(temp_player_proj[,"PTS.x"]+temp_player_proj[,"PTS.y"])/2))
-# 
-# write.csv(gp_table,'/Users/amydonaldson/Documents/Habib/dev/gp_table.csv',row.names=FALSE)
-# write.csv(player_proj,'/Users/amydonaldson/Documents/Habib/dev/player_proj.csv',row.names=FALSE)
-
-
 gp_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv')
 gp_table <- read.csv(text = gp_url)
 player_proj_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv')
@@ -123,16 +16,16 @@ player_proj <- read.csv(text = player_proj_url)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
-  player_proj_input <- reactive({
+  player_proj_input <- eventReactive(input$go, {
     return (data.frame(player_proj,value=(input$budget)/(input$squad_size)))
   })
-  interim_valuation_table <- reactive({
+  interim_valuation_table <- eventReactive(input$go, {
     
     progress <- shiny::Progress$new(session, min=1, max=input$n_iters + input$n_iters)
     on.exit(progress$close())
     
     progress$set(message = 'Simulation in progress',
-                 detail = '\n This may take a while... (see progress underneath the address bar)')
+                 detail = '\n This may take a while... (see progress bar)')
     
     player_proj <- player_proj_input()
     
@@ -252,7 +145,7 @@ shinyServer(function(input, output, session) {
     return (valuation_table)
   })
   
-  final_valuation_table <- reactive({
+  final_valuation_table <- eventReactive(input$go, {
     valuation_table <- interim_valuation_table()[interim_valuation_table()$iter==input$n_iters,]
     full_valuation_table <- merge(valuation_table,gp_table,all.x=TRUE)
     full_valuation_table$GP <- ifelse(is.na(full_valuation_table$GP),mean(gp_table$GP),full_valuation_table$GP)
@@ -275,8 +168,8 @@ shinyServer(function(input, output, session) {
     ggplot(plot_data,aes(x=player,y=final_value,fill=highlight)) +
       geom_bar(stat="identity") +
       scale_fill_manual(values=c("#78c9a1","#ffc800")) +
-      xlab("Player") +
-      ylab("Value") +
+      xlab("\nPlayer") +
+      ylab("Value\n") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
             , legend.position="none"
             , axis.ticks=element_blank()) +
@@ -290,8 +183,8 @@ shinyServer(function(input, output, session) {
            ,aes(x=iteration,y=value,colour=player)) +
       geom_path() +
       xlim(1,input$n_iters + 1) +
-      xlab("Iteration") +
-      ylab("Player value") +
+      xlab("\nIteration") +
+      ylab("Player value\n") +
       scale_colour_discrete(name = "Player")
   },  height = 400, width = 800 )
   output$team_value <- renderText({ 
@@ -300,7 +193,13 @@ shinyServer(function(input, output, session) {
     return (paste0("The current selection of players is valued at ",round(team_value,0)," under the current league settings"))
   })
   output$sel_playerlist <- renderUI({
-    selectizeInput("sel_players","Highlight players:", choices = levels(final_valuation_table()$player), selected = NULL, multiple = TRUE,
+    selectizeInput("sel_players","Selected players:", choices = levels(final_valuation_table()$player), selected = NULL, multiple = TRUE,
                    options = NULL)
   })
+  output$downloadData <- downloadHandler(
+    filename = function() { paste(input$budget,input$n_teams,input$squad_size,input$n_iters,input$n_samples,'player_value_table.csv', sep='_') },
+    content = function(file) {
+      write.csv(final_valuation_table()[,c('player','final_value')], file, row.names = FALSE)
+    }
+  )
 })
