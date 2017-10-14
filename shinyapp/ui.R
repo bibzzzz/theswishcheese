@@ -4,7 +4,7 @@ library(shiny)
 shinyUI(fluidPage(
   
   # Google analytics tracking
-  # tags$head(includeScript("google-analytics.js")),
+  tags$head(includeScript("google-analytics.js")),
   
   # Application title
   titlePanel(HTML('<a target="_blank" href="http://cargocollective.com/theswishcheese">the swish cheese</a> - NBA fantasy draft wizard'), 
@@ -18,6 +18,10 @@ shinyUI(fluidPage(
       checkboxGroupInput("cats", "Categories (select at least 1):",
                          c("Field goal percentage" = "FGPCT",
                            "Free throw percentage" = "FTPCT",
+                           "Field goals made" = "FGM",
+                           "Field goals attempted" = "FGA",
+                           "Free throws made" = "FTM",
+                           "Free throws attempted" = "FTA",
                            "Three pointers made" = "TPM",
                            "Assists" = "AST",
                            "Steals" = "STL",
@@ -42,7 +46,7 @@ shinyUI(fluidPage(
                    style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
       br(),
       h3("Optimization settings"),
-      sliderInput("n_iters","No. of iterations:", min=10, max=500, value = 50, step = 10),
+      sliderInput("n_iters","No. of iterations:", min=10, max=500, value = 350, step = 10),
       sliderInput("n_samples","No. of samples per iteration:", min=20, max=100, value = 50, step = 10),
       h3("Final valuation table"),
       p("(Only available once optimization is complete)"),

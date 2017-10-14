@@ -11,7 +11,7 @@ low_perc <- 0.75
 
 gp_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv')
 gp_table <- read.csv(text = gp_url)
-# gp_table$GP <- as.numeric(as.character(gp_table$GP))
+gp_table$GP <- as.numeric(as.character(gp_table$GP))
 player_proj_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv')
 player_proj <- read.csv(text = player_proj_url)
 player_proj$TO <- -player_proj$TO
@@ -25,6 +25,10 @@ shinyServer(function(input, output, session) {
       updateCheckboxGroupInput(session, "cats", "Categories:", 
                                choices=c("Field goal percentage" = "FGPCT",
                                          "Free throw percentage" = "FTPCT",
+                                         "Field goals made" = "FGM",
+                                         "Field goals attempted" = "FGA",
+                                         "Free throws made" = "FTM",
+                                         "Free throws attempted" = "FTA",
                                          "Three pointers made" = "TPM",
                                          "Assists" = "AST",
                                          "Steals" = "STL",
@@ -38,6 +42,10 @@ shinyServer(function(input, output, session) {
     {
       updateCheckboxGroupInput(session, "cats", "Categories:", choices=c("Field goal percentage" = "FGPCT",
                                                                          "Free throw percentage" = "FTPCT",
+                                                                         "Field goals made" = "FGM",
+                                                                         "Field goals attempted" = "FGA",
+                                                                         "Free throws made" = "FTM",
+                                                                         "Free throws attempted" = "FTA",
                                                                          "Three pointers made" = "TPM",
                                                                          "Assists" = "AST",
                                                                          "Steals" = "STL",
@@ -47,6 +55,10 @@ shinyServer(function(input, output, session) {
                                                                          "Turnovers" = "TO"), 
                                selected=c("Field goal percentage" = "FGPCT",
                                           "Free throw percentage" = "FTPCT",
+                                          "Field goals made" = "FGM",
+                                          "Field goals attempted" = "FGA",
+                                          "Free throws made" = "FTM",
+                                          "Free throws attempted" = "FTA",
                                           "Three pointers made" = "TPM",
                                           "Assists" = "AST",
                                           "Steals" = "STL",
@@ -59,7 +71,7 @@ shinyServer(function(input, output, session) {
   })
   
   player_proj_input <- eventReactive(input$go, {
-    print(player_proj)
+    # print(player_proj)
     return (data.frame(player_proj,value=(input$budget)/(input$squad_size)))
   })
   interim_valuation_table <- eventReactive(input$go, {
@@ -80,12 +92,14 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:ncol(team_proj_i)])
-        if ((team_perf_i[length(team_perf_i)]<=input$budget)&(team_perf_i[length(team_perf_i)]>=0.9*input$budget)){
+        if ((floor(team_perf_i[length(team_perf_i)])<=input$budget)&(team_perf_i[length(team_perf_i)]>=0.9*input$budget)){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
-          print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
-          i <- i + 1}
+          i <- i + 1
+          }
       }
+      
+      print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
       
       agg_team_proj <- data.frame(agg_team_proj)
       
@@ -139,12 +153,13 @@ shinyServer(function(input, output, session) {
         sample_i <- sample(1:nrow(player_proj),input$squad_size,replace=FALSE)
         team_proj_i <- player_proj[sample_i,]
         team_perf_i <- colSums(team_proj_i[,2:ncol(team_proj_i)])
-        if ((team_perf_i[length(team_perf_i)]<=input$budget)&(team_perf_i[length(team_perf_i)]>=0.9*input$budget)){
+        if ((floor(team_perf_i[length(team_perf_i)])<=input$budget)&(team_perf_i[length(team_perf_i)]>=0.9*input$budget)){
           playerlist[i] <- list(team_proj_i$player)
           agg_team_proj <- rbind(agg_team_proj,team_perf_i)
-          print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
           i <- i + 1}
       }
+      
+      print(paste0(iter,"/",input$n_iters," - ",i,"/",input$n_samples))
       
       agg_team_proj <- data.frame(agg_team_proj)
       
@@ -190,9 +205,13 @@ shinyServer(function(input, output, session) {
   final_valuation_table <- eventReactive(input$go, {
     valuation_table <- interim_valuation_table()[interim_valuation_table()$iter==input$n_iters,]
     full_valuation_table <- merge(valuation_table, gp_table, by="player", all.x=TRUE)
-    full_valuation_table$GP <- ifelse(is.na(full_valuation_table$GP), mean(gp_table$GP), full_valuation_table$GP)
+    print(head(full_valuation_table))
+    print(mean(gp_table$GP))
+    print(ifelse(is.na(full_valuation_table$GP), mean(gp_table$GP), full_valuation_table$GP))
+    full_valuation_table$GP <- ifelse(is.na(full_valuation_table$GP), mean(gp_table[!is.na(gp_table$GP),]$GP), full_valuation_table$GP)
     full_valuation_table$final_value <- (full_valuation_table$GP/max(full_valuation_table$GP))*full_valuation_table$value
     full_valuation_table$final_value <- (input$budget*input$n_teams)*(full_valuation_table$final_value/sum(full_valuation_table$final_value))
+    print(head(full_valuation_table))
     return (full_valuation_table)
   })
   output$player_proj_table <- renderTable({
@@ -247,10 +266,12 @@ shinyServer(function(input, output, session) {
       if (length(grep("FGPCT", proj_cols)) > 0){
         proj_cols <- proj_cols[proj_cols!="FGPCT"]
         proj_cols <- c(proj_cols, "FGM", "FGA")
+        proj_cols <- unique(proj_cols)
       }
       if (length(grep("FTPCT", proj_cols)) > 0){
         proj_cols <- proj_cols[proj_cols!="FTPCT"]
         proj_cols <- c(proj_cols, "FTM", "FTA")
+        proj_cols <- unique(proj_cols)
       }
       
       download_table <- merge(final_valuation_table()[,c('player','final_value', 'GP')],
