@@ -36,7 +36,7 @@ shinyUI(fluidPage(
       actionLink("all_cats", "Tick 'em all ^"),
       br(),
       br(),
-      sliderInput("budget","Select budget:", min=100, max=500, value = 200, step=50),
+      sliderInput("budget","Select budget:", min=100, max=500, value = 200, step=5),
       sliderInput("n_teams","No. of teams in league:", min=2, max=20, value = 14),
       sliderInput("squad_size","No. of core players:", min=2, max=13, value = 10),
       uiOutput("sel_playerlist"),
