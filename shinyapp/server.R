@@ -11,9 +11,11 @@ low_perc <- 0.75
 
 gp_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/gp_table.csv')
 gp_table <- read.csv(text = gp_url)
+names(gp_table) = c("player", "GP")
 gp_table$GP <- as.numeric(as.character(gp_table$GP))
 player_proj_url <- getURL('https://raw.githubusercontent.com/bibzzzz/theswishcheese/master/player_proj.csv')
 player_proj <- read.csv(text = player_proj_url)
+names(player_proj) = c("player", "FGM", "FTM", "TPM", "PTS", "REB", "AST", "STL", "BLK", "TO", "FGA", "FTA")
 player_proj$TO <- -player_proj$TO
 
 # Define server logic required to draw a histogram
