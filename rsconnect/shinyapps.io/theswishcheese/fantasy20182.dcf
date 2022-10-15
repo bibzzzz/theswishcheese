@@ -1,0 +1,11 @@
+name: fantasy20182
+title: fantasy2018
+account: theswishcheese
+server: shinyapps.io
+appId: 221951
+bundleId: 1010588
+url: https://theswishcheese.shinyapps.io/fantasy20182/
+when: 1507130297.97823
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Rapp.history|aggregated_projections_2018.xlsx|draft_assistant.xlsx|fantasy_valuations.R|gp_table.csv|nba_fantasy_engine.R|player_proj.csv
